@@ -1,0 +1,28 @@
+# tftpd-hpa default startup options
+
+TFTP_USERNAME="<%= @user -%>"
+TFTP_DIRECTORY="<%= @tftproot %>"
+TFTP_ADDRESS="<%= address %>"
+TFTP_OPTIONS=""
+<% if @create -%>
+TFTP_OPTIONS="${TFTP_OPTIONS} --create"
+<% end -%>
+<% if @listen -%>
+TFTP_OPTIONS="${TFTP_OPTIONS} --listen"
+<% end -%>
+<% if @mapfile -%>
+TFTP_OPTIONS="${TFTP_OPTIONS} -m <%= @tftproot %>/<%= @mapfile %>"
+<% end -%>
+<% if @permissive -%>
+TFTP_OPTIONS="${TFTP_OPTIONS} --permissive"
+<% end -%>
+<% if @secure -%>
+TFTP_OPTIONS="${TFTP_OPTIONS} --secure"
+<% end -%>
+<% if @umask -%>
+TFTP_OPTIONS="${TFTP_OPTIONS} --umask <%= @umask %>"
+<% end -%>
+<% if @verbosity -%>
+TFTP_OPTIONS="${TFTP_OPTIONS} --verbosity <%= @verbosity %>"
+<% end -%>
+
