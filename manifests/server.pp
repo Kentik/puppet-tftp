@@ -110,6 +110,7 @@
 #   * Debian
 #   * Fedora
 #   * RedHat
+#   * OpenSUSE
 #   * Ubuntu
 #
 # === Authors
@@ -147,64 +148,70 @@ class tftp::server (
 {
     # Set the user for file ownership
     $user = $::operatingsystem ? {
-        'centos' => 'tftp',
-        'debian' => 'tftp',
-        'fedora' => 'tftp',
-        'redhat' => 'tftp',
-        'ubuntu' => 'tftp',
-        default  => 'root',
+        'centos'   => 'tftp',
+        'debian'   => 'tftp',
+        'fedora'   => 'tftp',
+        'redhat'   => 'tftp',
+        'opensuse' => 'tftp',
+        'ubuntu'   => 'tftp',
+        default    => 'root',
     }
 
     # Set the group for file ownership
     $group = $::operatingsystem ? {
-        'centos'  => 'tftp',
-        'debian'  => 'tftp',
-        'fedora'  => 'tftp',
-        'freebsd' => 'wheel',
-        'openbsd' => 'wheel',
-        'redhat'  => 'tftp',
-        'ubuntu'  => 'tftp',
-        default   => 'root',
+        'centos'   => 'tftp',
+        'debian'   => 'tftp',
+        'fedora'   => 'tftp',
+        'freebsd'  => 'wheel',
+        'openbsd'  => 'wheel',
+        'redhat'   => 'tftp',
+        'opensuse' => 'tftp',
+        'ubuntu'   => 'tftp',
+        default    => 'root',
     }
 
     # Set the name of the tftp package to install
     $server_package = $::operatingsystem ? {
-        'centos' => 'tftp-server',
-        'debian' => 'tftpd-hpa',
-        'fedora' => 'tftp-server',
-        'redhat' => 'tftp-server',
-        'ubuntu' => 'tftpd-hpa',
-        default  => '',
+        'centos'   => 'tftp-server',
+        'debian'   => 'tftpd-hpa',
+        'fedora'   => 'tftp-server',
+        'redhat'   => 'tftp-server',
+        'opensuse' => 'tftp',
+        'ubuntu'   => 'tftpd-hpa',
+        default    => '',
     }
 
     # Set the name of the daemon defaults file
     $defaults_config_file = $::operatingsystem ? {
-        'centos' => '/etc/sysconfig/tftpd-hpa',
-        'debian' => '/etc/default/tftpd-hpa',
-        'fedora' => '/etc/sysconfig/tftpd-hpa',
-        'redhat' => '/etc/sysconfig/tftpd-hpa',
-        'ubuntu' => '/etc/default/tftpd-hpa',
-        default  => false,
+        'centos'  => '/etc/sysconfig/tftpd-hpa',
+        'debian'  => '/etc/default/tftpd-hpa',
+        'fedora'  => '/etc/sysconfig/tftpd-hpa',
+        'redhat'  => '/etc/sysconfig/tftpd-hpa',
+        'opensus' => '/etc/sysconfig/tftpd-hpa',
+        'ubuntu'  => '/etc/default/tftpd-hpa',
+        default   => false,
     }
 
     # Set the name of the init script
     $service_init_script = $::operatingsystem ? {
-        'centos' => '/etc/init.d/tftpd-hpa',
-        'debian' => '/etc/init.d/tftpd-hpa',
-        'fedora' => '/etc/init.d/tftpd-hpa',
-        'redhat' => '/etc/init.d/tftpd-hpa',
-        'ubuntu' => '/etc/init.d/tftpd-hpa',
-        default  => false,
+        'centos'  => '/etc/init.d/tftpd-hpa',
+        'debian'  => '/etc/init.d/tftpd-hpa',
+        'fedora'  => '/etc/init.d/tftpd-hpa',
+        'redhat'  => '/etc/init.d/tftpd-hpa',
+        'opensus' => '/etc/init.d/tftpd-hpa',
+        'ubuntu'  => '/etc/init.d/tftpd-hpa',
+        default   => false,
     }
 
     # Set the name of the init script template
     $service_init_script_template = $::operatingsystem ? {
-        'centos' => '/etc/init.d/tftpd-hpa.rh',
-        'debian' => '/etc/init.d/tftpd-hpa.deb',
-        'fedora' => '/etc/init.d/tftpd-hpa.rh',
-        'redhat' => '/etc/init.d/tftpd-hpa.rh',
-        'ubuntu' => '/etc/init.d/tftpd-hpa.deb',
-        default  => false,
+        'centos'   => '/etc/init.d/tftpd-hpa.rh',
+        'debian'   => '/etc/init.d/tftpd-hpa.deb',
+        'fedora'   => '/etc/init.d/tftpd-hpa.rh',
+        'redhat'   => '/etc/init.d/tftpd-hpa.rh',
+        'opensuse' => '/etc/init.d/tftpd-hpa.suse',
+        'ubuntu'   => '/etc/init.d/tftpd-hpa.deb',
+        default    => false,
     }
 
     # Service status command
@@ -248,15 +255,16 @@ class tftp::server (
     case $ensure {
         'present': {
             # Install the package
-            package { 'tftpd-package':
-                ensure => 'latest',
-                name   => $server_package,
+            if ( ! defined( Package[$server_package] )) {
+                package { $server_package:
+                    ensure => 'latest',
+                }
             }
 
             # Ensure the daemon group exists
             group { $group:
                 ensure  => 'present',
-                require => Package['tftpd-package'],
+                require => Package[$server_package],
             }
 
             # Ensure the daemon user exists
@@ -277,7 +285,7 @@ class tftp::server (
                     group   => 'root',
                     content => template( "${module_name}/${defaults_config_file}" ),
                     notify  => Service['tftp-service'],
-                    require => Package['tftpd-package']
+                    require => Package[$server_package]
                 }
             }
 
@@ -294,7 +302,7 @@ class tftp::server (
                 mode    => $tftproot_mode,
                 recurse => true,
                 require => [
-                    Package['tftpd-package'],
+                    Package[$server_package],
                     User[$user],
                     Group[$group],
                 ],
@@ -311,7 +319,7 @@ class tftp::server (
                         "${settings::modulepath}/${module_name}/templates/${$service_init_script_template}"
                     )
                 ),
-                require => Package['tftpd-package'],
+                require => Package[$server_package],
             }
 
             # Copy in the mapfile
@@ -329,7 +337,7 @@ class tftp::server (
                 ),
                 require => [
                     File[$tftproot],
-                    Package['tftpd-package'],
+                    Package[$server_package],
                     User[$user],
                     Group[$group],
                 ],
@@ -343,12 +351,12 @@ class tftp::server (
                 $service_state = 'running'
 
                 case $::operatingsystem {
-                    'centos','fedora','redhat': {
+                    'centos','fedora','opensuse','redhat': {
                         exec { 'configure-tftpd-inetd':
                             path    => [ '/bin', '/usr/bin/', '/sbin' ],
                             command => '/sbin/chkconfig tftp off',
                             unless  => [ 'test `chkconfig --list | grep -c "tftp:.*off"` -eq 1' ],
-                            require => Package['tftpd-package'],
+                            require => Package[$server_package],
                         }
                     }
                     'debian', 'ubuntu': {
@@ -356,7 +364,7 @@ class tftp::server (
                             path    => [ '/usr/bin/', '/usr/sbin' ],
                             command => '/usr/sbin/update-inetd --disable tftp',
                             onlyif  => [ '/usr/bin/test -f /etc/inetd.conf && /usr/bin/test -f /usr/sbin/update-inetd' ],
-                            require => Package['tftpd-package'],
+                            require => Package[$server_package],
                         }
                     }
                 }
@@ -365,12 +373,12 @@ class tftp::server (
                 $service_state = 'stopped'
 
                 case $::operatingsystem {
-                    'centos','fedora','redhat': {
+                    'centos','fedora','opensuse','redhat': {
                         exec { 'configure-tftpd-inetd':
                             path    => [ '/bin', '/usr/bin/', '/sbin' ],
                             command => '/sbin/chkconfig tftp on',
                             unless  => [ 'test `chkconfig --list | grep -c "tftp:.*on"` -eq 1' ],
-                            require => Package['tftpd-package'],
+                            require => Package[$server_package],
                         }
                     }
                     'debian', 'ubuntu': {
@@ -378,7 +386,7 @@ class tftp::server (
                             path    => [ '/usr/bin/', '/usr/sbin' ],
                             command => '/usr/sbin/update-inetd --enable tftp',
                             onlyif  => [ '/usr/bin/test -f /etc/inetd.conf && /usr/bin/test -f /usr/sbin/update-inetd' ],
-                            require => Package['tftpd-package'],
+                            require => Package[$server_package],
                         }
                     }
                 }
@@ -392,7 +400,7 @@ class tftp::server (
                 stop    => $service_stop_command,
                 status  => $service_status_command,
                 require => [
-                    Package['tftpd-package'],
+                    Package[$server_package],
                     Exec['configure-tftpd-inetd'],
                     File[$defaults_config_file],
                     File[$tftproot],
@@ -417,7 +425,7 @@ class tftp::server (
             # Remove the defautlts file
             file { $defaults_config_file:
                 ensure  => 'absent',
-                before  => Package['tftpd-package'],
+                before  => Package[$server_package],
                 require =>  Service['tftp-service'],
             }
 
@@ -432,28 +440,29 @@ class tftp::server (
             file { $tftproot:
                 ensure  => 'absent',
                 force   => true,
-                before  => Package['tftpd-package'],
+                before  => Package[$server_package],
                 require =>  Service['tftp-service'],
             }
 
             # Remove the package
-            package { 'tftpd-package':
-                ensure  => 'purged',
-                name    => $server_package,
-                require =>  Service['tftp-service'],
+            if ( ! defined( Package[$server_package] )) {
+                package { $server_package:
+                    ensure  => 'purged',
+                    require =>  Service['tftp-service'],
+                }
             }
 
             # Remove the daemon user
             user { $user:
                 ensure  => 'absent',
-                require => Package['tftpd-package'],
+                require => Package[$server_package],
             }
 
             # Remove the daemon group
             group { $group:
                 ensure  => 'absent',
                 require => [
-                    Package['tftpd-package'],
+                    Package[$server_package],
                     User[$user],
                 ],
             }

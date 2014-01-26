@@ -52,12 +52,13 @@ class tftp::client (
 {
     # Set the name of the tftp client package to install
     $client_package = $::operatingsystem ? {
-        'centos' => 'tftp',
-        'debian' => 'tftp-hpa',
-        'fedora' => 'tftp',
-        'redhat' => 'tftp',
-        'ubuntu' => 'tftp-hpa',
-        default  => false,
+        'centos'   => 'tftp',
+        'debian'   => 'tftp-hpa',
+        'fedora'   => 'tftp',
+        'redhat'   => 'tftp',
+        'opensuse' => 'tftp',
+        'ubuntu'   => 'tftp-hpa',
+        default    => false,
     }
 
     # Fail if we aren't configured for this operating system
@@ -68,15 +69,17 @@ class tftp::client (
     case $ensure {
         'present': {
             # Install the package
-            package { $client_package:
+            package { 'tftp-client-package':
                 ensure => 'latest',
+                name   => $client_package,
             }
         }
 
         'absent': {
-            # Install the package
-            package { $client_package:
+            # Remove the package
+            package { 'tftp-client-package':
                 ensure => 'purged',
+                name   => $client_package,
             }
         }
 
