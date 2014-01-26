@@ -1,5 +1,5 @@
 name    'foolean-tftp'
-version '0.1.0'
+version '1.0.0'
 
 author  'bennett@foolean.org'
 summary 'Manage the tftp service'
