@@ -106,7 +106,11 @@
 #
 # === Supported Operating Systems
 #
+#   * CentOS
 #   * Debian
+#   * Fedora
+#   * RedHat
+#   * Ubuntu
 #
 # === Authors
 #
@@ -145,6 +149,7 @@ class tftp::server (
     $user = $::operatingsystem ? {
         'centos' => 'tftp',
         'debian' => 'tftp',
+        'fedora' => 'tftp',
         'redhat' => 'tftp',
         'ubuntu' => 'tftp',
         default  => 'root',
@@ -154,6 +159,7 @@ class tftp::server (
     $group = $::operatingsystem ? {
         'centos'  => 'tftp',
         'debian'  => 'tftp',
+        'fedora'  => 'tftp',
         'freebsd' => 'wheel',
         'openbsd' => 'wheel',
         'redhat'  => 'tftp',
@@ -165,6 +171,7 @@ class tftp::server (
     $server_package = $::operatingsystem ? {
         'centos' => 'tftp-server',
         'debian' => 'tftpd-hpa',
+        'fedora' => 'tftp-server',
         'redhat' => 'tftp-server',
         'ubuntu' => 'tftpd-hpa',
         default  => '',
@@ -174,6 +181,7 @@ class tftp::server (
     $defaults_config_file = $::operatingsystem ? {
         'centos' => '/etc/sysconfig/tftpd-hpa',
         'debian' => '/etc/default/tftpd-hpa',
+        'fedora' => '/etc/sysconfig/tftpd-hpa',
         'redhat' => '/etc/sysconfig/tftpd-hpa',
         'ubuntu' => '/etc/default/tftpd-hpa',
         default  => false,
@@ -183,6 +191,7 @@ class tftp::server (
     $service_init_script = $::operatingsystem ? {
         'centos' => '/etc/init.d/tftpd-hpa',
         'debian' => '/etc/init.d/tftpd-hpa',
+        'fedora' => '/etc/init.d/tftpd-hpa',
         'redhat' => '/etc/init.d/tftpd-hpa',
         'ubuntu' => '/etc/init.d/tftpd-hpa',
         default  => false,
@@ -192,6 +201,7 @@ class tftp::server (
     $service_init_script_template = $::operatingsystem ? {
         'centos' => '/etc/init.d/tftpd-hpa.rh',
         'debian' => '/etc/init.d/tftpd-hpa.deb',
+        'fedora' => '/etc/init.d/tftpd-hpa.rh',
         'redhat' => '/etc/init.d/tftpd-hpa.rh',
         'ubuntu' => '/etc/init.d/tftpd-hpa.deb',
         default  => false,
@@ -333,7 +343,7 @@ class tftp::server (
                 $service_state = 'running'
 
                 case $::operatingsystem {
-                    'centos','redhat': {
+                    'centos','fedora','redhat': {
                         exec { 'configure-tftpd-inetd':
                             path    => [ '/bin', '/usr/bin/', '/sbin' ],
                             command => '/sbin/chkconfig tftp off',
@@ -355,7 +365,7 @@ class tftp::server (
                 $service_state = 'stopped'
 
                 case $::operatingsystem {
-                    'centos','redhat': {
+                    'centos','fedora','redhat': {
                         exec { 'configure-tftpd-inetd':
                             path    => [ '/bin', '/usr/bin/', '/sbin' ],
                             command => '/sbin/chkconfig tftp on',

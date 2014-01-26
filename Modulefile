@@ -3,7 +3,9 @@ version '0.1.0'
 
 author  'bennett@foolean.org'
 summary 'Manage the tftp service'
-description 'Manage the tftp service'
+description ' Trivial File Transfer Protocol (TFTP) is a file transfer
+protocol, mainly to serve boot images over the network to other machines
+(PXE).'
 
 license 'Copyright (c) 2013 Foolean.org
 

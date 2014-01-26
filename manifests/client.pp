@@ -20,7 +20,11 @@
 #
 # === Supported Operating Systems
 #
+#   * CentOS
 #   * Debian
+#   * Fedora
+#   * RedHat
+#   * Ubuntu
 #
 # === Authors
 #
@@ -50,6 +54,7 @@ class tftp::client (
     $client_package = $::operatingsystem ? {
         'centos' => 'tftp',
         'debian' => 'tftp-hpa',
+        'fedora' => 'tftp',
         'redhat' => 'tftp',
         'ubuntu' => 'tftp-hpa',
         default  => false,
