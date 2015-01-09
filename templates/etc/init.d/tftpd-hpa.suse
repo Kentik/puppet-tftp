@@ -1,0 +1,142 @@
+#!/bin/bash
+#
+# tftpd-hpa        Startup script for tftpd-hpa.
+#
+# chkconfig:            2345 12 88
+# description:          tftp server to allow booting clients which support \
+#                       the PXE protocol.
+### BEGIN INIT INFO
+# Provides:             tftp-hpa
+# Required-Start:       $local_fs $remote_fs $syslog $network
+# Required-Stop:        $local_fs $remote_fs $syslog $network
+# Default-Start:        2 3 4 5
+# Default-Stop:         1
+# Short-Description:    HPA's tftp client
+# Description:          tftp server to allow booting clients which support
+#                       the PXE protocol.
+### END INIT INFO
+
+RETVAL=0
+PATH="/sbin:/bin:/usr/sbin:/usr/bin"
+DAEMON="/usr/sbin/in.tftpd"
+
+test -x "${DAEMON}" || exit 0
+
+NAME="in.tftpd"
+DESC="HPA's tftpd"
+PIDFILE="/var/run/tftpd-hpa.pid"
+PIDFILE="/var/run/${NAME}.pid"
+DEFAULTS="/etc/sysconfig/tftpd-hpa"
+
+# Include tftpd-hpa-server defaults if available
+if [ -r "${DEFAULTS}" ]
+then
+        . "${DEFAULTS}"
+fi
+
+set -e
+
+# Shell functions sourced from /etc/rc.status:
+#      rc_check         check and set local and overall rc status
+#      rc_status        check and set local and overall rc status
+#      rc_status -v     ditto but be verbose in local rc status
+#      rc_status -v -r  ditto and clear the local rc status
+#      rc_failed        set local and overall rc status to failed
+#      rc_failed <num>  set local and overall rc status to <num><num>
+#      rc_reset         clear local rc status (overall remains)
+#      rc_exit          exit appropriate to overall rc status
+. /etc/rc.status
+
+do_start() {
+        # Ensure --secure and multiple server directories are not used at the
+        # same time
+        if [ "$(echo ${TFTP_DIRECTORY} | wc -w)" -ge 2 ] && \
+           echo ${TFTP_OPTIONS} | grep -qs secure
+        then
+                echo
+                echo "When --secure is specified, exactly one directory can be specified."
+                echo "Please correct your /etc/sysconfig/tftpd-hpa file"
+                exit 1
+        fi
+
+        # Ensure server directories are existing
+        for _DIRECTORY in ${TFTP_DIRECTORY}
+        do
+                if [ ! -d "${_DIRECTORY}" ]
+                then
+                        echo "${_DIRECTORY} missing, aborting."
+                        exit 1
+                fi
+        done
+
+        [ -x ${DAEMON} ] || exit 5
+
+        echo -n $"Starting ${DESC}: "
+        startproc ${DAEMON} --listen  --user ${TFTP_USERNAME} --address ${TFTP_ADDRESS} \
+                ${TFTP_OPTIONS} ${TFTP_DIRECTORY}
+        RETVAL=$?
+        PID=$(pidofproc ${DAEMON})
+        if [ "${PID}" != "" ]; then
+                echo "${PID}" > ${PIDFILE}
+        fi
+
+        # Remember status and be verbose
+        rc_status -v
+
+        return $RETVAL
+}
+do_stop() {
+        echo -n $"Stopping ${DESC}: "
+        killproc ${DAEMON}
+        RETVAL=$?
+        rm -f "${PIDFILE}"
+        # Remember status and be verbose
+        rc_status -v
+
+        return $RETVAL
+}
+rhstatus() {
+        if [ -f ${PIDFILE} ]; then
+                PID=$(pidofproc ${DAEMON})
+                if [ "${PID}" != "" ]; then
+                    echo "${DESC} (pid ${PID}) is running..."
+                    exit 0
+                fi
+        fi
+        echo "${DESC} is stopped"
+        exit 3
+}
+restart() {
+        do_stop
+        do_start
+}
+
+case "$1" in
+  start)
+        do_start
+        ;;
+  stop)
+        do_stop
+        ;;
+  restart)
+        restart
+        ;;
+  reload)
+        exit 3
+        ;;
+  force-reload)
+        restart
+        ;;
+  status)
+        rhstatus
+        ;;
+  condrestart|try-restart)
+        rhstatus >/dev/null 2>&1 || exit 0
+        restart
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|condrestart|try-restart|reload|force-reload|status}"
+        exit 3
+esac
+
+exit $?
