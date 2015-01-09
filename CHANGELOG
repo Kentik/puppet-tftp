@@ -1,2 +1,5 @@
+2015-01-09 - Bennett Samowich <bennett@foolean.org> - 0.1.1
+- Fixing miscellaneous items reported by puppet-lint
+
 2014-01-20 - Bennett Samowich <bennett@foolean.org> - 0.1.0
 - Initial version

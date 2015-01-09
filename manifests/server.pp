@@ -39,12 +39,12 @@
 #   The use of this option is recommended for security as well as compatibility
 #   with some boot ROMs which cannot be easily made to include a directory name
 #   in its request.
-#   default: true             
+#   default: true
 #
 # [*timeout*]
 #   When run from inetd this specifies how long, in seconds, to wait for a
 #   second connection before terminating the server.  inetd will then respawn
-#   the server when another request comes in.  
+#   the server when another request comes in.
 #   default: 900 (15 minutes)
 #
 # [*tftproot*]
@@ -283,7 +283,9 @@ class tftp::server (
                     mode    => '0444',
                     owner   => 'root',
                     group   => 'root',
+                    # lint:ignore:80chars
                     content => template( "${module_name}/${defaults_config_file}" ),
+                    # lint:endignore
                     notify  => Service['tftp-service'],
                     require => Package[$server_package]
                 }
@@ -291,9 +293,9 @@ class tftp::server (
 
             # Make sure the tftproot exists
             if ( $create ) {
-               $tftproot_mode = '0600'
+                $tftproot_mode = '0600'
             } else {
-               $tftproot_mode = '0400'
+                $tftproot_mode = '0400'
             }
             file { $tftproot:
                 ensure  => 'directory',
@@ -331,8 +333,8 @@ class tftp::server (
                 content => inline_template(
                     file (
                         "${settings::modulepath}/${module_name}/templates/${tftproot}/${mapfile}",
-                        "${settings::modulepath}/../private/${fqdn}/${tftproot}/${mapfile}",
-                        "${settings::vardir}/private/${fqdn}/${tftproot}/${mapfile}"
+                        "${settings::modulepath}/../private/${::fqdn}/${tftproot}/${mapfile}",
+                        "${settings::vardir}/private/${::fqdn}/${tftproot}/${mapfile}"
                     )
                 ),
                 require => [
@@ -417,9 +419,9 @@ class tftp::server (
                 ensure => 'stopped',
                 enable => false,
                 name   => 'tftpd-hpa',
-                start   => $service_start_command,
-                stop    => $service_stop_command,
-                status  => $service_status_command,
+                start  => $service_start_command,
+                stop   => $service_stop_command,
+                status => $service_status_command,
             }
 
             # Remove the defautlts file
