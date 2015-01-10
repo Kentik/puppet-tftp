@@ -318,7 +318,9 @@ class tftp::server (
                 mode    => '0755',
                 content => inline_template(
                     file (
-                        "${settings::modulepath}/${module_name}/templates/${$service_init_script_template}"
+                        # lint:ignore:80chars
+                        "${settings::modulepath}/${module_name}/templates/${service_init_script_template}"
+                        # lint:endignore
                     )
                 ),
                 require => Package[$server_package],
@@ -332,9 +334,11 @@ class tftp::server (
                 mode    => '0400',
                 content => inline_template(
                     file (
+                        # lint:ignore:80chars
                         "${settings::modulepath}/${module_name}/templates/${tftproot}/${mapfile}",
                         "${settings::modulepath}/../private/${::fqdn}/${tftproot}/${mapfile}",
                         "${settings::vardir}/private/${::fqdn}/${tftproot}/${mapfile}"
+                        # lint:endignore
                     )
                 ),
                 require => [
@@ -357,7 +361,9 @@ class tftp::server (
                         exec { 'configure-tftpd-inetd':
                             path    => [ '/bin', '/usr/bin/', '/sbin' ],
                             command => '/sbin/chkconfig tftp off',
+                            # lint:ignore:80chars
                             unless  => [ 'test `chkconfig --list | grep -c "tftp:.*off"` -eq 1' ],
+                            # lint:endignore
                             require => Package[$server_package],
                         }
                     }
@@ -365,9 +371,16 @@ class tftp::server (
                         exec { 'configure-tftpd-inetd':
                             path    => [ '/usr/bin/', '/usr/sbin' ],
                             command => '/usr/sbin/update-inetd --disable tftp',
+                            # lint:ignore:80chars
                             onlyif  => [ '/usr/bin/test -f /etc/inetd.conf && /usr/bin/test -f /usr/sbin/update-inetd' ],
+                            # lint:endignore
                             require => Package[$server_package],
                         }
+                    }
+                    default: {
+                        # lint:ignore:80chars
+                        fail("Module ${module_name} is not supported on ${::operatingsystem}")
+                        # lint:endignore
                     }
                 }
             } else {
@@ -379,7 +392,9 @@ class tftp::server (
                         exec { 'configure-tftpd-inetd':
                             path    => [ '/bin', '/usr/bin/', '/sbin' ],
                             command => '/sbin/chkconfig tftp on',
+                            # lint:ignore:80chars
                             unless  => [ 'test `chkconfig --list | grep -c "tftp:.*on"` -eq 1' ],
+                            # lint:endignore
                             require => Package[$server_package],
                         }
                     }
@@ -387,9 +402,16 @@ class tftp::server (
                         exec { 'configure-tftpd-inetd':
                             path    => [ '/usr/bin/', '/usr/sbin' ],
                             command => '/usr/sbin/update-inetd --enable tftp',
+                            # lint:ignore:80chars
                             onlyif  => [ '/usr/bin/test -f /etc/inetd.conf && /usr/bin/test -f /usr/sbin/update-inetd' ],
+                            # lint:endignore
                             require => Package[$server_package],
                         }
+                    }
+                    default: {
+                        # lint:ignore:80chars
+                        fail("Module ${module_name} is not supported on ${::operatingsystem}")
+                        # lint:endignore
                     }
                 }
             }
