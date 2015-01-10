@@ -1,3 +1,6 @@
+2015-01-10 - Bennett Samowich <bennett@foolean.org> - 1.0.2
+- Cleaning up more puppet-lint items
+
 2015-01-09 - Bennett Samowich <bennett@foolean.org> - 1.0.1
 - Fixing miscellaneous items reported by puppet-lint
 
